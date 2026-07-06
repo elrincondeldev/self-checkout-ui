@@ -8,7 +8,7 @@ import { CartView } from './views/CartView'
 import { ReceiptView } from './views/ReceiptView'
 import { ConnectionBanner } from './components/ConnectionBanner'
 import { ErrorToast } from './components/ErrorToast'
-import { SimulateScanButton } from './components/SimulateScanButton'
+// import { SimulateScanButton } from './components/SimulateScanButton'
 
 type View = 'idle' | 'cart' | 'receipt'
 
@@ -45,7 +45,12 @@ function App() {
     [addScan],
   )
 
-  const socketStatus = useScanSocket(handleScan)
+  const handleUnknownTag = useCallback((tagId: string) => {
+    // Operator aid: surfaces the UID needed to register a new garment.
+    setError(`Item not recognized — tag ${tagId} is not registered.`)
+  }, [])
+
+  const socketStatus = useScanSocket(handleScan, handleUnknownTag)
 
   // If the customer removes every line, drop back to the idle screen.
   const cartEmpty = useCartStore((s) => s.lines.length === 0)
@@ -106,7 +111,7 @@ function App() {
       )}
 
       {error && <ErrorToast message={error} onDismiss={() => setError(null)} />}
-      <SimulateScanButton />
+      {/* <SimulateScanButton /> */}
     </div>
   )
 }

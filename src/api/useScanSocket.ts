@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Product, ScanEvent } from './types'
+import type { Product, SocketEvent } from './types'
 
 const WS_URL = import.meta.env.VITE_WS_URL ?? 'ws://localhost:8123/ws'
 
@@ -16,12 +16,15 @@ const MAX_DELAY_MS = 5000
  */
 export function useScanSocket(
   onScan: (tagId: string, product: Product) => void,
+  onUnknownTag?: (tagId: string) => void,
 ): SocketStatus {
   const [status, setStatus] = useState<SocketStatus>('connecting')
 
-  // Keep the latest callback without retriggering the effect.
+  // Keep the latest callbacks without retriggering the effect.
   const onScanRef = useRef(onScan)
   onScanRef.current = onScan
+  const onUnknownTagRef = useRef(onUnknownTag)
+  onUnknownTagRef.current = onUnknownTag
 
   useEffect(() => {
     let ws: WebSocket | null = null
@@ -39,9 +42,11 @@ export function useScanSocket(
 
       ws.onmessage = (event: MessageEvent<string>) => {
         try {
-          const message = JSON.parse(event.data) as ScanEvent
+          const message = JSON.parse(event.data) as SocketEvent
           if (message.event === 'scan' && message.tag_id && message.product) {
             onScanRef.current(message.tag_id, message.product)
+          } else if (message.event === 'unknown_tag' && message.tag_id) {
+            onUnknownTagRef.current?.(message.tag_id)
           }
         } catch {
           // ignore malformed frames

@@ -28,6 +28,14 @@ export interface ScanEvent extends ScanResult {
   event: 'scan'
 }
 
+/** Pushed when a sticker with no registered product is scanned. */
+export interface UnknownTagEvent {
+  event: 'unknown_tag'
+  tag_id: string
+}
+
+export type SocketEvent = ScanEvent | UnknownTagEvent
+
 export interface CheckoutItemRequest {
   product_id: number
   quantity: number
