@@ -7,8 +7,8 @@ import { simulateScan } from '../api/client'
  * Rendered only when `import.meta.env.DEV` is true.
  */
 const SEED_TAGS = [
-  { tag: '04:A3:2B:1C', label: 'Coca-Cola' },
-  { tag: '04:B7:99:F2', label: 'Chips' },
+  { tag: 'A0:D6:8E:39', label: 'T-Shirt (M, black)' },
+  { tag: '9C:4C:52:07', label: 'Hoodie (L, grey)' },
 ] as const
 
 export function SimulateScanButton() {

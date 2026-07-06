@@ -11,9 +11,12 @@ const MAX_DELAY_MS = 5000
 /**
  * Keeps a WebSocket to the scan feed open for the lifetime of the
  * component, reconnecting with exponential backoff (capped at ~5s).
- * Calls `onScan` for every `{event: "scan"}` message.
+ * Calls `onScan` for every `{event: "scan"}` message with the scanned
+ * sticker UID (one physical garment) and its product.
  */
-export function useScanSocket(onScan: (product: Product) => void): SocketStatus {
+export function useScanSocket(
+  onScan: (tagId: string, product: Product) => void,
+): SocketStatus {
   const [status, setStatus] = useState<SocketStatus>('connecting')
 
   // Keep the latest callback without retriggering the effect.
@@ -37,8 +40,8 @@ export function useScanSocket(onScan: (product: Product) => void): SocketStatus 
       ws.onmessage = (event: MessageEvent<string>) => {
         try {
           const message = JSON.parse(event.data) as ScanEvent
-          if (message.event === 'scan' && message.product) {
-            onScanRef.current(message.product)
+          if (message.event === 'scan' && message.tag_id && message.product) {
+            onScanRef.current(message.tag_id, message.product)
           }
         } catch {
           // ignore malformed frames

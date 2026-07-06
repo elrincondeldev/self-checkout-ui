@@ -1,4 +1,4 @@
-import type { CheckoutRequest, Product, Transaction } from './types'
+import type { CheckoutRequest, Product, ScanResult, Transaction } from './types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8123'
 
@@ -61,8 +61,8 @@ export function checkout(body: CheckoutRequest): Promise<Transaction> {
  * Dev-only scan simulation. The production kiosk never calls this —
  * real scans come from the ESP32 and arrive over the WebSocket.
  */
-export function simulateScan(tagId: string): Promise<Product> {
-  return request<Product>('/scan', {
+export function simulateScan(tagId: string): Promise<ScanResult> {
+  return request<ScanResult>('/scan', {
     method: 'POST',
     headers: { 'X-API-Key': 'dev-secret-key' },
     body: JSON.stringify({ tag_id: tagId }),

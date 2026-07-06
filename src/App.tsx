@@ -23,7 +23,7 @@ function App() {
   const [checkingOut, setCheckingOut] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const addProduct = useCartStore((s) => s.addProduct)
+  const addScan = useCartStore((s) => s.addScan)
   const clearCart = useCartStore((s) => s.clear)
 
   // Refs so the stable scan callback always sees current view/state.
@@ -31,13 +31,18 @@ function App() {
   viewRef.current = view
 
   const handleScan = useCallback(
-    (product: Product) => {
-      addProduct(product)
+    (tagId: string, product: Product) => {
+      // Each sticker is one physical garment: scanning the same one
+      // twice means the customer re-scanned an item already in the cart.
+      if (addScan(tagId, product) === 'duplicate') {
+        setError(`${product.name} is already in your cart.`)
+        return
+      }
       // A scan always lands in the cart view: it starts a new cart from
       // idle and cuts a lingering receipt short for the next customer.
       if (viewRef.current !== 'cart') setView('cart')
     },
-    [addProduct],
+    [addScan],
   )
 
   const socketStatus = useScanSocket(handleScan)
@@ -58,7 +63,7 @@ function App() {
       const transaction = await checkout({
         items: lines.map((l) => ({
           product_id: l.product.id,
-          quantity: l.quantity,
+          quantity: l.tagIds.length,
         })),
       })
       const productNames = Object.fromEntries(
